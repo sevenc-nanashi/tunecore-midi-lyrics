@@ -1,4 +1,11 @@
+import consola from "consola";
+
 export const namespace = "tcml";
+
+const root = consola.withTag("Tunecore MIDI Lyrics");
+export const createLogger = (scope: string) => {
+  return root.withTag(scope);
+};
 
 export function matchUrl(path: string, pattern: string): boolean {
   const regex = new RegExp(

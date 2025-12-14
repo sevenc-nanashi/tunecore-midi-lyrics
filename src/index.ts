@@ -1,11 +1,18 @@
+import vanjs from "vanjs-core";
+import { R } from "@praha/byethrow";
+import { match, P } from "ts-pattern";
 import {
+  createLogger,
   getElementBySelector,
+  getElementsBySelector,
   maybeGetElementBySelector,
   namespace,
-} from "./utils";
-import vanjs from "vanjs-core";
+} from "./utils.ts";
+import { midiToLyrics } from "./midi.ts";
 
-const { div, h5, p, button, a: anchor } = vanjs.tags;
+const logger = createLogger("index");
+
+const { div, h5, p, button, a: anchor, span } = vanjs.tags;
 
 function addLyricsForm() {
   const lyricsRoot = maybeGetElementBySelector<HTMLDivElement>(
@@ -14,28 +21,168 @@ function addLyricsForm() {
   if (!lyricsRoot) {
     return;
   }
-  const caution = getElementBySelector<HTMLDivElement>(
-    `.lyrics_caution`,
-    lyricsRoot,
-  );
+  logger.info("Injecting MIDI lyrics form");
+  const caution = getElementBySelector<HTMLDivElement>(`.caution`, lyricsRoot);
 
   const form = div(
     { class: "tcml-container" },
     h5(
       { class: "tcml-title", style: "font-size: 110%;margin-bottom: 5px" },
       "MIDIから読み込む",
+      span(
+        { style: "font-size: 80%; margin-left: 1rem; color: #8e8e8e" },
+        "by ",
+        anchor(
+          {
+            target: "_blank",
+            href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
+          },
+          "Tunecore MIDI Lyrics",
+        ),
+      ),
     ),
-    p({ style: "margin-bottom: 5px" }, "MIDIの歌詞情報から読み込みます。"),
-    anchor(
+    p(
+      { style: "margin-bottom: 5px; font-size: 80%" },
+      "MIDIの歌詞情報から読み込みます。",
+    ),
+    div(
       {
-        target: "_blank",
-        href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
+        style: "display: flex; align-items: center",
       },
-      "MIDIファイルの仕様について",
+      button(
+        { class: "btn btn-default", type: "button", onclick: loadMidiFile },
+        "MIDIを開く",
+      ),
+      anchor(
+        {
+          target: "_blank",
+          href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
+          style: "margin-left: 10px; font-size: 80%",
+        },
+        "MIDIファイルの仕様について",
+      ),
     ),
-    button({ class: "btn btn-default", type: "button" }, "MIDIを開く"),
   );
-  caution.insertBefore(form, caution.nextElementSibling);
+  const parentElement = caution.parentElement;
+  if (!parentElement) {
+    throw new Error("Caution element has no parent");
+  }
+  parentElement.insertBefore(form, caution.nextElementSibling);
+
+  lyricsRoot.dataset[namespace + "Injected"] = "true";
+}
+
+async function loadMidiFile() {
+  logger.info("Loading MIDI file");
+  const midiData = await openMidiFile();
+  if (!midiData) {
+    logger.warn("No MIDI file selected");
+    return;
+  }
+  logger.info("MIDI file loaded", midiData);
+  const lyricsResult = midiToLyrics(midiData);
+  if (R.isFailure(lyricsResult)) {
+    logger.error("Failed to parse MIDI file", lyricsResult.error);
+    alert(
+      `MIDIを読み込めませんでした。\n${match(lyricsResult.error)
+        .with(
+          { type: "parseError", message: P.string },
+          ({ message }) => `MIDIファイルを解析できませんでした：${message}`,
+        )
+        .with(
+          { type: "invalidTextEncoding", positions: P.array() },
+          ({ positions }) =>
+            `MIDIの歌詞を正しくデコードできませんでした。\n位置：${positions
+              .map((p) => `${p.measure}.${p.beat}.${p.tick}`)
+              .join("、")}`,
+        )
+        .with(
+          { type: "noNote", positions: P.array() },
+          ({ positions }) =>
+            `MIDIの歌詞に対応するノートが見つかりませんでした。\n位置：${positions
+              .map((p) => `${p.measure}.${p.beat}.${p.tick}`)
+              .join("、")}`,
+        )
+        .with(
+          { type: "excessiveTextEvents", positions: P.array() },
+          ({ positions }) =>
+            `MIDIの歌詞に対応していないノートが存在します。\n位置：${positions
+              .map((p) => `${p.measure}.${p.beat}.${p.tick}`)
+              .join("、")}`,
+        )
+        .with(
+          { type: "overlappingNotes", positions: P.array() },
+          ({ positions }) =>
+            `ノートが重なっています。\n位置：${positions
+              .map((p) => `${p.measure}.${p.beat}.${p.tick}`)
+              .join("、")}`,
+        )
+        .exhaustive()}`,
+    );
+    return;
+  }
+
+  const lyrics = lyricsResult.value;
+  const maxLyrics = 1500;
+  if (lyrics.length > maxLyrics) {
+    const confirmResult = confirm(
+      `MIDIの歌詞数が多すぎます（${lyrics.length}個）。先頭の${maxLyrics}個のみを読み込みます。続行しますか？`,
+    );
+    if (!confirmResult) {
+      logger.info("User cancelled loading due to excessive lyrics");
+      return;
+    }
+
+    lyrics.splice(maxLyrics);
+  } else {
+    logger.info(`Parsed ${lyrics.length} lyric events from MIDI`);
+  }
+
+  logger.info("Clearing existing lyrics");
+  const lyricsRows = getElementsBySelector<HTMLDivElement>(".lyrics_row");
+  for (const row of lyricsRows) {
+    const removeButton = getElementBySelector<HTMLButtonElement>(
+      ".remove_row_button",
+      row,
+    );
+    const startTime = getElementBySelector<HTMLTableCellElement>(
+      ".start-time",
+      row,
+    );
+    if (startTime.textContent.trim() !== "") {
+      removeButton.click();
+    }
+  }
+
+  const lyricsText = getElementBySelector<HTMLTextAreaElement>(
+    "textarea.lyrics-text",
+  );
+  const lines = lyricsResult.value.map((event) => event.text);
+  lyricsText.value = lines.join("\n");
+  const event = new Event("input", { bubbles: true });
+  lyricsText.dispatchEvent(event);
+
+  logger.info("Lyrics loaded into textarea");
+
+  const internalAudio = getElementBySelector<HTMLAudioElement>(
+    ".operation-button-wrapper audio",
+  );
+  const setButton = getElementBySelector<HTMLButtonElement>(
+    ".audio_control_container .set-button",
+  );
+  // 実は、disabledを消すだけで押せるようになる
+  setButton.removeAttribute("disabled");
+
+  for (const [i, event] of lyrics.entries()) {
+    internalAudio.currentTime = event.time;
+    const timestampButton = getElementBySelector<HTMLButtonElement>(
+      `.lyrics_row[data-row_num="${i + 1}"]`,
+    );
+    timestampButton.click();
+    setButton.click();
+  }
+
+  setButton.setAttribute("disabled", "true");
 }
 
 async function openMidiFile(): Promise<Uint8Array | null> {
@@ -68,6 +215,7 @@ async function openMidiFile(): Promise<Uint8Array | null> {
 }
 
 async function main() {
+  logger.info("Script started");
   setInterval(() => {
     addLyricsForm();
   }, 1000);

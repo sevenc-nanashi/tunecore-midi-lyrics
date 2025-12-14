@@ -6,7 +6,19 @@ const epsilon = 1e-6;
 
 export type ConvertError =
   | {
+      type: "parseError";
+      message: string;
+    }
+  | {
+      type: "invalidTextEncoding";
+      positions: Position[];
+    }
+  | {
       type: "noNote";
+      positions: Position[];
+    }
+  | {
+      type: "excessiveTextEvents";
       positions: Position[];
     }
   | {
@@ -15,23 +27,62 @@ export type ConvertError =
     };
 
 export type LyricEvent = { time: number; text: string };
+
+const parseTonejsMidi = R.try({
+  try: (data: Uint8Array) => new Midi(data),
+  catch: (e) => ({ type: "parseError" as const, message: String(e) }),
+});
+const parseMidiFile = R.try({
+  try: (data: Uint8Array) => parseMidi(data),
+  catch: (e) => ({ type: "parseError" as const, message: String(e) }),
+});
+const fixMidiFileTextEncoding = R.try({
+  try: (data: string) => {
+    return new TextDecoder().decode(
+      new Uint8Array(data.split("").map((c) => c.charCodeAt(0))),
+    );
+  },
+  catch: (e) => ({ type: "invalidTextEncoding" as const, message: String(e) }),
+});
+
 export function midiToLyrics(
   data: Uint8Array,
 ): R.Result<LyricEvent[], ConvertError> {
-  const tonejsMidi = new Midi(data);
-  const midiEvents = parseMidi(data);
+  const tonejsMidiResult = parseTonejsMidi(data);
+  if (R.isFailure(tonejsMidiResult)) {
+    return R.fail(tonejsMidiResult.error);
+  }
+  const tonejsMidi = tonejsMidiResult.value;
+
+  const midiFileResult = parseMidiFile(data);
+  if (R.isFailure(midiFileResult)) {
+    return R.fail(midiFileResult.error);
+  }
+  const midiEvents = midiFileResult.value;
+
   const textEvents: { tick: number; text: string }[] = [];
+  const invalidEncodingPositions: number[] = [];
   for (const track of midiEvents.tracks) {
     let currentTick = 0;
     for (const event of track) {
       currentTick += event.deltaTime;
       if (event.type === "text") {
-        const reencodedText = new TextDecoder().decode(
-          new Uint8Array(event.text.split("").map((c) => c.charCodeAt(0))),
-        );
-        textEvents.push({ tick: currentTick, text: reencodedText });
+        const decodeResult = fixMidiFileTextEncoding(event.text);
+        if (R.isFailure(decodeResult)) {
+          invalidEncodingPositions.push(currentTick);
+        } else {
+          textEvents.push({ tick: currentTick, text: decodeResult.value });
+        }
       }
     }
+  }
+  if (invalidEncodingPositions.length > 0) {
+    return R.fail({
+      type: "invalidTextEncoding",
+      positions: invalidEncodingPositions.map((tick) =>
+        ticksToPosition(tonejsMidi.header, tick),
+      ),
+    });
   }
 
   const notes = tonejsMidi.tracks.flatMap((track) => track.notes);
@@ -53,7 +104,8 @@ export function midiToLyrics(
     });
   }
 
-  const unusedTicks: number[] = [];
+  const noNoteTicks: number[] = [];
+  const noteTicks = new Set(notes.map((n) => n.ticks));
   for (const textEvent of textEvents) {
     const note = notes.find((n) => n.ticks === textEvent.tick);
     if (note) {
@@ -63,14 +115,23 @@ export function midiToLyrics(
         text: "",
         midi: note.midi,
       });
+      noteTicks.delete(textEvent.tick);
     } else {
-      unusedTicks.push(textEvent.tick);
+      noNoteTicks.push(textEvent.tick);
     }
   }
-  if (unusedTicks.length > 0) {
+  if (noNoteTicks.length > 0) {
     return R.fail({
       type: "noNote",
-      positions: unusedTicks.map((tick) =>
+      positions: noNoteTicks.map((tick) =>
+        ticksToPosition(tonejsMidi.header, tick),
+      ),
+    });
+  }
+  if (noteTicks.size > textEvents.length) {
+    return R.fail({
+      type: "excessiveTextEvents",
+      positions: Array.from(noteTicks).map((tick) =>
         ticksToPosition(tonejsMidi.header, tick),
       ),
     });
@@ -90,9 +151,13 @@ export function midiToLyrics(
     }
     if (results[i].midi === results[i + 1].midi) {
       results.splice(i, 1);
-    } else {
-      results[i + 1].time = results[i].time + epsilon;
     }
+  }
+  for (let i = 0; i < results.length - 1; i++) {
+    if (results[i].time < results[i + 1].time) {
+      continue;
+    }
+    results[i + 1].time = results[i].time + epsilon;
   }
   results.splice(results.length - 1, 1);
 

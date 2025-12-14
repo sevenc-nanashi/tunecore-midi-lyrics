@@ -8,22 +8,26 @@
     "@biomejs/biome": "2.3.8",
     "@types/bun": "^1.3.4",
     "chokidar": "^5.0.0",
-    "esbuild": "^0.27.1"
+    "esbuild": "^0.27.1",
+    "vite": "^7.2.7",
+    "vite-plugin-monkey": "^7.1.6"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
   },
   "homepage": "https://github.com/sevenc-nanashi/tunecore-midi-lyrics#readme",
   "scripts": {
-    "dev": "bun run ./dev.ts",
-    "build": "bun run ./build.ts",
+    "dev": "vite",
+    "build": "vite build",
     "test": "bun test"
   },
   "type": "module",
   "dependencies": {
     "@praha/byethrow": "^0.8.1",
     "@tonejs/midi": "^2.0.28",
+    "consola": "^3.4.2",
     "midi-file": "^1.2.4",
+    "ts-pattern": "^5.9.0",
     "vanjs-core": "^1.6.0"
   }
 }
