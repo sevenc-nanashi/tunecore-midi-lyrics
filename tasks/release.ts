@@ -27,7 +27,7 @@ if (!values.version) {
 const version = values.version;
 const push = values.push;
 
-const currentHeadSha = (await $`git rev-parse HEAD`).text();
+const currentHeadSha = (await $`git rev-parse HEAD`.quiet(true)).text();
 consola.info(`Current HEAD: ${currentHeadSha}`);
 consola.info(`Releasing version: v${version}`);
 consola.info(`Push to remote: ${push}`);
