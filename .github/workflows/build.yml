@@ -43,4 +43,5 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add tunecore-midi-lyrics.user.js
           git commit -am "feat: update built file"
+          # なぜかそのままだと push できないのでGITHUB_TOKENのURLにして push する
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} built
