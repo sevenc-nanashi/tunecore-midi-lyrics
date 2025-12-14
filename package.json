@@ -19,7 +19,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "bun test"
+    "test": "bun test",
+    "tasks:release": "bun run ./tasks/release.ts"
   },
   "type": "module",
   "dependencies": {
