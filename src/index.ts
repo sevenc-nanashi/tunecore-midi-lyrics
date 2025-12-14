@@ -31,13 +31,21 @@ function addLyricsForm() {
       "MIDIから読み込む",
       span(
         { style: "font-size: 80%; margin-left: 1rem; color: #8e8e8e" },
-        "by ",
         anchor(
           {
             target: "_blank",
             href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
           },
           "Tunecore MIDI Lyrics",
+        ),
+        " by ",
+        anchor(
+          {
+            target: "_blank",
+            href: "https://www.tunecore.co.jp/artists/sevenc-nanashi",
+            style: "color: #48b0d5",
+          },
+          "Nanashi.",
         ),
       ),
     ),
@@ -56,7 +64,7 @@ function addLyricsForm() {
       anchor(
         {
           target: "_blank",
-          href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
+          href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics#midi-spec",
           style: "margin-left: 10px; font-size: 80%",
         },
         "MIDIファイルの仕様について",
