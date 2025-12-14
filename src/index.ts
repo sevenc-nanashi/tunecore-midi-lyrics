@@ -12,7 +12,9 @@ import { midiToLyrics } from "./midi.ts";
 
 const logger = createLogger("index");
 
-const { div, h5, p, button, a: anchor, span } = vanjs.tags;
+const { div, h5, p, button, a: anchor, span, input } = vanjs.tags;
+
+const offset = vanjs.state(0);
 
 function addLyricsForm() {
   const lyricsRoot = maybeGetElementBySelector<HTMLDivElement>(
@@ -51,12 +53,38 @@ function addLyricsForm() {
     ),
     p(
       { style: "margin-bottom: 5px; font-size: 80%" },
-      "MIDIの歌詞情報から読み込みます。",
+      "MIDIの歌詞情報を読み込み、歌詞入力欄に反映します。",
     ),
     div(
       {
         style: "display: flex; align-items: center",
       },
+      div(
+        {
+          style: "display: flex; align-items: center",
+        },
+        p(
+          {
+            style: "font-size: 80%",
+          },
+          "開始時間（秒）：",
+        ),
+        input(
+          {
+            type: "number",
+            class: "form-control",
+            value: () => offset.val,
+            step: "any",
+            style: "width: 5rem; margin-left: 5px; margin-right: 10px",
+            onchange: (e: Event) => {
+              const target = e.target as HTMLInputElement;
+              const value = Number(target.value);
+              offset.val = isNaN(value) ? 0 : value;
+            },
+          },
+          [],
+        ),
+      ),
       button(
         { class: "btn btn-default", type: "button", onclick: loadMidiFile },
         "MIDIを開く",
@@ -131,6 +159,17 @@ async function loadMidiFile() {
   }
 
   const lyrics = lyricsResult.value;
+
+  if (lyrics[0].time < offset.val) {
+    logger.warn(
+      `Lyrics start time (${lyrics[0].time}) is before offset (${offset.val})`,
+    );
+    alert(
+      `MIDIの歌詞の開始時間（${lyrics[0].time}秒）が、指定したオフセット時間（${offset.val}秒）より前です。オフセット時間を見直してください。`,
+    );
+    return;
+  }
+
   const maxLyrics = 1500;
   if (lyrics.length > maxLyrics) {
     const confirmResult = confirm(
@@ -182,7 +221,8 @@ async function loadMidiFile() {
   setButton.removeAttribute("disabled");
 
   for (const [i, event] of lyrics.entries()) {
-    internalAudio.currentTime = event.time;
+    const time = event.time - offset.val;
+    internalAudio.currentTime = time;
     const timestampButton = getElementBySelector<HTMLButtonElement>(
       `.lyrics_row[data-row_num="${i + 1}"]`,
     );
