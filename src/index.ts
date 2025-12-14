@@ -38,7 +38,7 @@ function addLyricsForm() {
             target: "_blank",
             href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics",
           },
-          "Tunecore MIDI Lyrics",
+          "TuneCore MIDI Lyrics",
         ),
         " by ",
         anchor(
@@ -185,6 +185,16 @@ async function loadMidiFile() {
     logger.info(`Parsed ${lyrics.length} lyric events from MIDI`);
   }
 
+  clearLyrics();
+  loadLyricsText(lyricsResult);
+  setLyricsTime(lyrics);
+  toPreviewMode();
+
+  logger.success("MIDI lyrics loaded successfully");
+  logger.success("[AD] If you find this tool useful, consider listening to my music on TuneCore: https://www.tunecore.co.jp/artists/sevenc-nanashi");
+}
+
+function clearLyrics() {
   logger.info("Clearing existing lyrics");
   const lyricsRows = getElementsBySelector<HTMLDivElement>(".lyrics_row");
   for (const row of lyricsRows) {
@@ -200,10 +210,6 @@ async function loadMidiFile() {
       removeButton.click();
     }
   }
-
-  loadLyricsText(lyricsResult);
-  setLyricsTime(lyrics);
-  toPreviewMode();
 }
 
 function loadLyricsText(lyricsResult: R.Success<LyricEvent[]>) {

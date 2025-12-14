@@ -1,6 +1,6 @@
-# Tunecore MIDI Lyrics
+# TuneCore MIDI Lyrics
 
-Tunecoreの歌詞登録の行同期をMIDIファイルから行えるようにするUserscript。
+TuneCoreの歌詞登録の行同期をMIDIファイルから行えるようにするUserscript。
 
 ## インストール
 
@@ -11,7 +11,7 @@ Tunecoreの歌詞登録の行同期をMIDIファイルから行えるように�
 
 <a name="usage"></a>
 
-1. Tunecoreのリリース編集ページを開きます。
+1. TuneCoreのリリース編集ページを開きます。
 2. 「歌詞未設定」または「歌詞設定済み」ボタンを押し、「行同期」を選択します。
 3. 「MIDIを開く」ボタンをクリックします。
 
