@@ -43,4 +43,4 @@ jobs:
           git config --global user.name "GitHub Actions"
           git add tunecore-midi-lyrics.user.js
           git commit -am "feat: update built file"
-          git push origin built
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} built
