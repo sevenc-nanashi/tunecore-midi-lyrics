@@ -1,0 +1,42 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`midi can parse midi 1`] = `
+[
+  {
+    "text": "ああああ",
+    "time": 0,
+  },
+  {
+    "text": "あいうえお",
+    "time": 0,
+  },
+  {
+    "text": "",
+    "time": 1,
+  },
+  {
+    "text": "かきくけこ",
+    "time": 1.25,
+  },
+  {
+    "text": "さしすせそ",
+    "time": 2,
+  },
+  {
+    "text": "",
+    "time": 2.5,
+  },
+  {
+    "text": "たちつてと",
+    "time": 3,
+  },
+  {
+    "text": "",
+    "time": 4,
+  },
+  {
+    "text": "なにぬねの",
+    "time": 4.000001,
+  },
+]
+`;
