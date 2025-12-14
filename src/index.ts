@@ -8,7 +8,7 @@ import {
   maybeGetElementBySelector,
   namespace,
 } from "./utils.ts";
-import { midiToLyrics } from "./midi.ts";
+import { midiToLyrics, type LyricEvent } from "./midi.ts";
 
 const logger = createLogger("index");
 
@@ -65,7 +65,8 @@ function addLyricsForm() {
         },
         p(
           {
-            style: "font-size: 80%",
+            style: "font-size: 80%; cursor: help",
+            title: "MIDI内のタイミングを早めます。",
           },
           "開始時間（秒）：",
         ),
@@ -92,10 +93,10 @@ function addLyricsForm() {
       anchor(
         {
           target: "_blank",
-          href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics#midi-spec",
+          href: "https://github.com/sevenc-nanashi/tunecore-midi-lyrics#usage",
           style: "margin-left: 10px; font-size: 80%",
         },
-        "MIDIファイルの仕様について",
+        "使い方",
       ),
     ),
   );
@@ -115,7 +116,6 @@ async function loadMidiFile() {
     logger.warn("No MIDI file selected");
     return;
   }
-  logger.info("MIDI file loaded", midiData);
   const lyricsResult = midiToLyrics(midiData);
   if (R.isFailure(lyricsResult)) {
     logger.error("Failed to parse MIDI file", lyricsResult.error);
@@ -201,6 +201,12 @@ async function loadMidiFile() {
     }
   }
 
+  loadLyricsText(lyricsResult);
+  setLyricsTime(lyrics);
+  toPreviewMode();
+}
+
+function loadLyricsText(lyricsResult: R.Success<LyricEvent[]>) {
   const lyricsText = getElementBySelector<HTMLTextAreaElement>(
     "textarea.lyrics-text",
   );
@@ -210,7 +216,9 @@ async function loadMidiFile() {
   lyricsText.dispatchEvent(event);
 
   logger.info("Lyrics loaded into textarea");
+}
 
+function setLyricsTime(lyrics: LyricEvent[]) {
   const internalAudio = getElementBySelector<HTMLAudioElement>(
     ".operation-button-wrapper audio",
   );
@@ -230,7 +238,21 @@ async function loadMidiFile() {
     setButton.click();
   }
 
+  internalAudio.currentTime = 0;
   setButton.setAttribute("disabled", "true");
+  logger.info("Lyrics timing set");
+}
+
+function toPreviewMode() {
+  const previewInput = getElementBySelector<HTMLInputElement>(
+    '[name="preview_flag"]',
+  );
+  // プレビュー中は2回クリックして更新させる
+  const numClicks = previewInput.checked ? 2 : 1;
+  for (let i = 0; i < numClicks; i++) {
+    previewInput.click();
+  }
+  logger.info("Preview toggled");
 }
 
 async function openMidiFile(): Promise<Uint8Array | null> {
