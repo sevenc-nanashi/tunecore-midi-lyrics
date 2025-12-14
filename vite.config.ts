@@ -12,8 +12,16 @@ export default defineConfig({
         match: "https://www.tunecore.co.jp/member/release/*",
       },
     }),
+    {
+      name: "enable-minifier",
+      apply: "build",
+      config() {
+        return {
+          build: {
+            minify: true,
+          },
+        };
+      },
+    },
   ],
-  build: {
-    minify: true,
-  },
 });
