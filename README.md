@@ -5,7 +5,7 @@ Tunecoreの歌詞登録の行同期をMIDIファイルから行えるように�
 ## インストール
 
 1. [Tampermonkey](https://www.tampermonkey.net/)などのUserscriptマネージャーをインストールします。
-2. [ここ](https://raw.githubusercontent.com/sevenc-nanashi/tunecore-midi-lyrics/built/index.user.js) からUserscriptをインストールします。
+2. [ここ](https://raw.githubusercontent.com/sevenc-nanashi/tunecore-midi-lyrics/built/tunecore-midi-lyrics.user.js) からUserscriptをインストールします。
 
 ## 使い方
 
