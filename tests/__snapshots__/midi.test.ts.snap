@@ -8,7 +8,7 @@ exports[`midi can parse midi 1`] = `
   },
   {
     "text": "あいうえお",
-    "time": 0.000001,
+    "time": 0.001,
   },
   {
     "text": "",
@@ -36,7 +36,7 @@ exports[`midi can parse midi 1`] = `
   },
   {
     "text": "なにぬねの",
-    "time": 4.000001,
+    "time": 4.001,
   },
 ]
 `;

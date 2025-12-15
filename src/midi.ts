@@ -2,7 +2,7 @@ import { Header, Midi } from "@tonejs/midi";
 import { parseMidi } from "midi-file";
 import { R } from "@praha/byethrow";
 
-const epsilon = 1e-6;
+const epsilon = 0.001;
 
 export type ConvertError =
   | {
