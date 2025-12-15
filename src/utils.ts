@@ -2,7 +2,7 @@ import consola from "consola";
 
 export const namespace = "tcml";
 
-const root = consola.withTag("Tunecore MIDI Lyrics");
+const root = consola.withTag("TuneCore MIDI Lyrics");
 export const createLogger = (scope: string) => {
   return root.withTag(scope);
 };
