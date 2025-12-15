@@ -191,7 +191,7 @@ async function loadMidiFile() {
   toPreviewMode();
 
   logger.success("MIDI lyrics loaded successfully");
-  logger.success("[AD] If you find this tool useful, consider listening to my music on TuneCore: https://www.tunecore.co.jp/artists/sevenc-nanashi");
+  logger.success("[AD] If you find this tool useful, consider listening to my music on TuneCore <3: https://www.tunecore.co.jp/artists/sevenc-nanashi");
 }
 
 function clearLyrics() {
