@@ -28,6 +28,7 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
+          git fetch origin built --depth=1
           # なぜかそのままだとpushできないのでGITHUB_TOKENのURLにしてpushする
           # TODO: なんとかする
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
@@ -36,4 +37,4 @@ jobs:
         run: bun install
 
       - name: Release
-        run: bun run tasks:release -v ${{ github.event.inputs.version }}
+        run: bun run tasks:release -v ${{ github.event.inputs.version }} -p
