@@ -16,6 +16,11 @@ const { div, h5, p, button, a: anchor, span, input } = vanjs.tags;
 
 const offset = vanjs.state(0);
 
+const ads = [
+  "listening to my music on TuneCore <3: https://www.tunecore.co.jp/artists/sevenc-nanashi",
+  "retweeting the announcement tweet <3: https://twitter.com/sevenc_nanashi/status/2000356981786415487",
+];
+
 function addLyricsForm() {
   const lyricsRoot = maybeGetElementBySelector<HTMLDivElement>(
     `#lyrics_line_sync:not([data-${namespace}-injected="true"])`,
@@ -191,7 +196,9 @@ async function loadMidiFile() {
   toPreviewMode();
 
   logger.success("MIDI lyrics loaded successfully");
-  logger.success("[AD] If you find this tool useful, consider listening to my music on TuneCore <3: https://www.tunecore.co.jp/artists/sevenc-nanashi");
+  logger.success(
+    `[AD] If you find this tool useful, consider ${ads[Math.floor(Math.random() * ads.length)]}`,
+  );
 }
 
 function clearLyrics() {
