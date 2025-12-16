@@ -154,7 +154,7 @@ export function midiToLyrics(
     }
   }
   for (let i = 0; i < results.length - 1; i++) {
-    if (results[i].time < results[i + 1].time) {
+    if (results[i].time + epsilon < results[i + 1].time) {
       continue;
     }
     results[i + 1].time = results[i].time + epsilon;
