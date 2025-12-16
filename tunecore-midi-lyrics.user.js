@@ -1,10 +1,12 @@
 // ==UserScript==
 // @name         tunecore-midi-lyrics
-// @version      0.1.3
+// @version      0.1.4
 // @author       Nanashi. <https://sevenc7c.com>
 // @description  TuneCoreの歌詞登録をMIDIからできるようにするUserscript
 // @homepage     https://github.com/sevenc-nanashi/tunecore-midi-lyrics#readme
 // @homepageURL  https://github.com/sevenc-nanashi/tunecore-midi-lyrics#readme
+// @downloadURL  https://raw.githubusercontent.com/sevenc-nanashi/tunecore-midi-lyrics/built/tunecore-midi-lyrics.user.js
+// @updateURL    https://raw.githubusercontent.com/sevenc-nanashi/tunecore-midi-lyrics/built/tunecore-midi-lyrics.user.js
 // @match        https://www.tunecore.co.jp/member/release/*
 // ==/UserScript==
 
