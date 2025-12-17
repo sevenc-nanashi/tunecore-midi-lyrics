@@ -32,11 +32,11 @@ exports[`midi can parse midi 1`] = `
   },
   {
     "text": "",
-    "time": 4,
+    "time": 3.999,
   },
   {
     "text": "なにぬねの",
-    "time": 4.001,
+    "time": 4,
   },
 ]
 `;
