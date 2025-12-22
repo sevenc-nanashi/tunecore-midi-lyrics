@@ -1,6 +1,6 @@
-import { Header, Midi } from "@tonejs/midi";
-import { parseMidi } from "midi-file";
 import { R } from "@praha/byethrow";
+import { type Header, Midi } from "@tonejs/midi";
+import { parseMidi } from "midi-file";
 
 const epsilon = 0.001;
 
@@ -157,7 +157,18 @@ export function midiToLyrics(
     if (results[i].time + epsilon < results[i + 1].time) {
       continue;
     }
-    results[i + 1].time = results[i].time + epsilon;
+    // When empty line comes before lyrics, advance the empty line instead of delaying the lyrics
+    // But only if it doesn't create a new overlap with the previous element
+    const canAdvanceEmptyLine =
+      results[i].text === "" &&
+      results[i + 1].text !== "" &&
+      (i === 0 ||
+        results[i - 1].time + epsilon < results[i + 1].time - epsilon);
+    if (canAdvanceEmptyLine) {
+      results[i].time = results[i + 1].time - epsilon;
+    } else {
+      results[i + 1].time = results[i].time + epsilon;
+    }
   }
   results.splice(results.length - 1, 1);
 
