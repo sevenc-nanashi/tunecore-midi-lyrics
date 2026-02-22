@@ -28,15 +28,15 @@ export type ConvertError =
 
 export type LyricEvent = { time: number; text: string };
 
-const parseTonejsMidi = R.try({
+const parseTonejsMidi = R.fn({
   try: (data: Uint8Array) => new Midi(data),
   catch: (e) => ({ type: "parseError" as const, message: String(e) }),
 });
-const parseMidiFile = R.try({
+const parseMidiFile = R.fn({
   try: (data: Uint8Array) => parseMidi(data),
   catch: (e) => ({ type: "parseError" as const, message: String(e) }),
 });
-const fixMidiFileTextEncoding = R.try({
+const fixMidiFileTextEncoding = R.fn({
   try: (data: string) => {
     return new TextDecoder().decode(
       new Uint8Array(data.split("").map((c) => c.charCodeAt(0))),
